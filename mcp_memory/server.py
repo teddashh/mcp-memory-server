@@ -232,6 +232,35 @@ def memory_delete(id: str, workspace: str = "current") -> str:
 
 
 # ============================================================
+# CJK-AWARE TOKEN ESTIMATION
+# ============================================================
+
+def estimate_tokens(text: str) -> int:
+    """Estimate token count with CJK awareness.
+    ASCII ~0.25 tokens/char, CJK ~1.5 tokens/char, Emoji ~2.0 tokens/char.
+    Based on lossless-claw-enhanced's approach."""
+    if not text:
+        return 0
+    tokens = 0.0
+    for ch in text:
+        cp = ord(ch)
+        if (0x4E00 <= cp <= 0x9FFF or      # CJK Unified Ideographs
+            0x3400 <= cp <= 0x4DBF or      # CJK Extension A
+            0xF900 <= cp <= 0xFAFF or      # CJK Compatibility
+            0x3000 <= cp <= 0x303F or      # CJK Symbols
+            0x3040 <= cp <= 0x309F or      # Hiragana
+            0x30A0 <= cp <= 0x30FF or      # Katakana
+            0xAC00 <= cp <= 0xD7AF or      # Korean Hangul
+            0xFF00 <= cp <= 0xFFEF):       # Fullwidth Forms
+            tokens += 1.5
+        elif cp >= 0x1F600:                 # Emoji range
+            tokens += 2.0
+        else:
+            tokens += 0.25
+    return int(tokens + 0.5)
+
+
+# ============================================================
 # SALIENCE — access tracking, reinforcement, decay
 # ============================================================
 
@@ -737,11 +766,18 @@ def memory_compact(workspace: str = "current") -> str:
 
     content = session_path.read_text(encoding="utf-8")
     line_count = len(content.splitlines())
+    token_count = estimate_tokens(content)
+    char_count = len(content)
+
+    needs_compact = token_count > 3000 or line_count > 100
+    status = "COMPACT RECOMMENDED" if needs_compact else "OK"
 
     return (
-        f"[{ws}] session.md has {line_count} lines.\n"
-        f"Compact should be triggered by the agent (read session.md, extract items via memory_record_*, "
-        f"then trim session.md). This tool reports status only."
+        f"[{ws}] session.md status: {status}\n"
+        f"  Lines: {line_count} | Chars: {char_count} | Estimated tokens: {token_count}\n"
+        f"  (CJK-aware: CJK=1.5tok, ASCII=0.25tok, Emoji=2.0tok)\n"
+        f"  Threshold: 100 lines or 3000 tokens\n"
+        f"{'  → Agent should: read session.md, extract items via memory_record_*, trim session.md' if needs_compact else '  → No compaction needed'}"
     )
 
 
