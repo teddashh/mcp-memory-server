@@ -641,7 +641,7 @@ def memory_activity_log(
     agent: str = "", action: str = "", workspace: str = "all", limit: int = 20
 ) -> str:
     """View agent activity log. Filter by agent name, action type, or workspace.
-    Shows what agents (hr_patrol, pm_patrol, claude, etc.) have been doing."""
+    Shows what agents (schedulers, dispatchers, etc.) have been doing."""
     oracle = get_oracle()
     if oracle is None:
         return "Activity log requires cloud DB connection"

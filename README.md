@@ -175,7 +175,7 @@ Query: L2 (fast) → L4 (cross-workspace)
 | `memory_audit_search` | Search audit trail (keyword, date, sender, importance) | 搜尋稽核軌跡 |
 | `memory_audit_stats` | Audit statistics (by importance, direction, category) | 稽核統計 |
 | `memory_daily_report` | Daily reports (email stats, calendar, narrative) | 每日報告 |
-| `memory_activity_log` | Agent activity log (patrols, dispatches) | 代理活動日誌 |
+| `memory_activity_log` | Agent activity log (scheduled tasks, dispatches) | 代理活動日誌 |
 
 ### Admin / 管理
 
@@ -243,10 +243,10 @@ Inspired by [lossless-claw-enhanced](https://github.com/win4r/lossless-claw-enha
 ### Impact / 影響
 
 ```
-Text: "Oracle CLAUDE_MEMORY schema 建好了，18 張表全部部署完成。"
+Text: "資料庫 schema 部署完成，所有表都已經建好了。"
 
-Standard estimate:  44 chars × 0.25 = 11 tokens  ← WRONG
-CJK-aware estimate: 44 chars → 27 tokens          ← CORRECT (2.5x difference)
+Standard estimate:  22 chars × 0.25 = 6 tokens   ← WRONG
+CJK-aware estimate: 22 chars → 28 tokens          ← CORRECT (4.7x difference)
 ```
 
 `memory_compact` uses CJK-aware estimation to accurately determine when `session.md` needs compaction:
@@ -288,10 +288,10 @@ CJK-aware estimate: 44 chars → 27 tokens          ← CORRECT (2.5x difference
 
 | Table | Scale | Purpose | 用途 |
 |-------|-------|---------|------|
-| **AUDIT_LOG** | 86K+ rows | Every email, message, and action — timestamped, categorized, suspicious-flagged | 每封郵件和動作的完整紀錄 |
-| **ACTIVITY_LOG** | 1.3K+ rows | Agent patrol logs, dispatches, health checks | 代理巡邏、派送、健康檢查 |
-| **DAILY_REPORTS** | 1.8K+ rows | Auto-generated daily summaries with email stats, calendar, narrative | 自動產生的每日摘要 |
-| **AUDIT_PROGRESS** | 300+ rows | Data source processing tracker | 資料來源處理進度 |
+| **AUDIT_LOG** | Scales to 100K+ | Every email, message, and action — timestamped, categorized, suspicious-flagged | 每封郵件和動作的完整紀錄 |
+| **ACTIVITY_LOG** | Grows daily | Agent scheduled task logs, dispatches, health checks | 代理排程任務、派送、健康檢查 |
+| **DAILY_REPORTS** | 1 per day | Auto-generated daily summaries with email stats, calendar, narrative | 自動產生的每日摘要 |
+| **AUDIT_PROGRESS** | Per source | Data source processing tracker | 資料來源處理進度 |
 
 Search by date, sender, keyword, importance (H/M/L), suspicious flag. Get aggregate stats by period.
 
@@ -309,7 +309,7 @@ Every workspace belongs to a **domain**: `work`, `personal`, or `system`.
                     └────────────────────┘
                               ↕ cross-domain search (opt-in)
                     ┌────── personal ─────┐
-                    │ openclaw            │  ← Separate domain
+                    │ my-app              │  ← Separate domain
                     │ side-projects       │
                     └─────────────────────┘
 ```
