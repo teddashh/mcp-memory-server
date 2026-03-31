@@ -1,15 +1,16 @@
 """
 MCP Memory Server — unified memory interface for AI agents.
 
-Tools:
-  Write:  memory_store, memory_record_decision, memory_record_resolved,
-          memory_record_question, memory_record_knowledge
-  Read:   memory_list, memory_get, memory_get_summary
-  Delete: memory_delete
-  Search: memory_search (vector + text)
-  Trail:  memory_audit_search, memory_audit_stats, memory_daily_report,
-          memory_activity_log
-  Admin:  memory_compact, memory_status, memory_oracle_summary
+Tools (18 + 1):
+  Write:    memory_store, memory_record_decision, memory_record_resolved,
+            memory_record_question, memory_record_knowledge
+  Read:     memory_list, memory_get, memory_get_summary
+  Delete:   memory_delete
+  Search:   memory_search (vector + text, salience-weighted)
+  Salience: memory_reinforce (boost important memories)
+  Trail:    memory_audit_search, memory_audit_stats, memory_daily_report,
+            memory_activity_log
+  Admin:    memory_compact, memory_status, memory_oracle_summary
 
 Usage:
   python -m mcp_memory.server          # stdio (Claude Code)
@@ -175,14 +176,15 @@ def memory_list(type: str = "all", workspace: str = "current", limit: int = 20) 
 
 @mcp.tool()
 def memory_get(id: str, workspace: str = "current") -> str:
-    """Get a specific memory by ID. Searches all tables."""
+    """Get a specific memory by ID. Searches all tables. Auto-tracks access."""
     ws = detect_workspace() if workspace == "current" else workspace
     conn = get_sqlite(ws)
 
     for table in ["decisions", "resolved", "open_questions", "knowledge_items"]:
-        id_col = "id"
-        row = conn.execute(f"SELECT * FROM {table} WHERE {id_col} = ?", (id,)).fetchone()
+        row = conn.execute(f"SELECT * FROM {table} WHERE id = ?", (id,)).fetchone()
         if row:
+            _touch_access(conn, table, id)
+            conn.commit()
             conn.close()
             return f"[{ws}/{table}] " + json.dumps(dict(row), ensure_ascii=False, default=str)
 
@@ -230,6 +232,66 @@ def memory_delete(id: str, workspace: str = "current") -> str:
 
 
 # ============================================================
+# SALIENCE — access tracking, reinforcement, decay
+# ============================================================
+
+def _touch_access(conn, table: str, record_id: str):
+    """Increment access_count and update last_accessed for a record."""
+    try:
+        conn.execute(f"""
+            UPDATE {table} SET
+                access_count = COALESCE(access_count, 0) + 1,
+                last_accessed = datetime('now'),
+                salience = MIN(COALESCE(salience, 1.0) * 1.05, 2.0)
+            WHERE id = ?
+        """, (record_id,))
+    except Exception:
+        pass  # columns may not exist in old DBs
+
+
+@mcp.tool()
+def memory_reinforce(id: str, workspace: str = "current") -> str:
+    """Manually boost a memory's salience. Use when a memory proves especially valuable."""
+    ws = detect_workspace() if workspace == "current" else workspace
+    conn = get_sqlite(ws)
+    for table in ["decisions", "resolved", "open_questions", "knowledge_items"]:
+        row = conn.execute(f"SELECT id, salience, access_count FROM {table} WHERE id = ?", (id,)).fetchone()
+        if row:
+            new_salience = min((row["salience"] or 1.0) * 1.2, 2.0)
+            conn.execute(f"""
+                UPDATE {table} SET
+                    salience = ?, access_count = COALESCE(access_count, 0) + 1,
+                    last_accessed = datetime('now')
+                WHERE id = ?
+            """, (new_salience, id))
+            conn.commit()
+            conn.close()
+            return f"Reinforced '{id}' in {table} [{ws}]: salience {row['salience']:.2f} → {new_salience:.2f}"
+    conn.close()
+    return f"Memory '{id}' not found in [{ws}]"
+
+
+def run_decay(workspace_id: str = None, decay_factor: float = 0.95, stale_days: int = 30):
+    """Run salience decay on memories not accessed in stale_days. Called by sync-all.ps1."""
+    ws = workspace_id or detect_workspace()
+    conn = get_sqlite(ws)
+    total = 0
+    for table in ["decisions", "resolved", "open_questions", "knowledge_items"]:
+        try:
+            cur = conn.execute(f"""
+                UPDATE {table} SET salience = COALESCE(salience, 1.0) * ?
+                WHERE (last_accessed IS NULL AND created_at < datetime('now', '-{stale_days} days'))
+                   OR (last_accessed < datetime('now', '-{stale_days} days'))
+            """, (decay_factor,))
+            total += cur.rowcount
+        except Exception:
+            pass
+    conn.commit()
+    conn.close()
+    return total
+
+
+# ============================================================
 # SEARCH TOOLS — Oracle vector + text
 # ============================================================
 
@@ -248,9 +310,10 @@ def memory_search(query: str, domain: str = "all", limit: int = 10) -> str:
     if embedding:
         return _vector_search(cur, embedding, domain, limit, oracle)
 
-    # Fall back to text search on Oracle
+    # Fall back to text search on Oracle (salience-weighted)
     sql = """
-        SELECT k.id, k.title, k.tags, w.workspace_id, w.domain
+        SELECT k.id, k.title, k.tags, w.workspace_id, w.domain,
+               COALESCE(k.salience, 1.0) as sal
         FROM KNOWLEDGE_ITEMS k
         JOIN WORKSPACES w ON k.workspace_id = w.workspace_id
         WHERE LOWER(k.title) LIKE :q OR LOWER(k.tags) LIKE :q OR LOWER(k.content) LIKE :q
@@ -259,16 +322,16 @@ def memory_search(query: str, domain: str = "all", limit: int = 10) -> str:
     if domain != "all":
         sql += " AND w.domain = :domain"
         params["domain"] = domain
-    sql += " ORDER BY k.created_at DESC FETCH FIRST :lim ROWS ONLY"
+    sql += " ORDER BY sal DESC, k.created_at DESC FETCH FIRST :lim ROWS ONLY"
     params["lim"] = limit
 
     cur.execute(sql, params)
     rows = cur.fetchall()
     if not rows:
         return f"No results for '{query}'"
-    lines = [f"Search '{query}' ({len(rows)} results):"]
+    lines = [f"Search '{query}' ({len(rows)} results, salience-weighted):"]
     for r in rows:
-        lines.append(f"  [{r[3]}|{r[4]}] {r[1][:60]} | tags={r[2]}")
+        lines.append(f"  [{r[3]}|{r[4]}] {r[1][:55]} | sal={r[5]:.2f} | tags={r[2]}")
     return "\n".join(lines)
 
 
@@ -341,18 +404,25 @@ def _local_text_search(query: str, limit: int) -> str:
         try:
             conn = get_sqlite(ws_id)
             rows = conn.execute(
-                "SELECT id, title, tags FROM knowledge_items WHERE LOWER(title) LIKE ? OR LOWER(content) LIKE ? LIMIT ?",
+                """SELECT id, title, tags, COALESCE(salience, 1.0) as sal
+                   FROM knowledge_items
+                   WHERE LOWER(title) LIKE ? OR LOWER(content) LIKE ?
+                   ORDER BY sal DESC LIMIT ?""",
                 (f"%{query.lower()}%", f"%{query.lower()}%", limit),
             ).fetchall()
             for r in rows:
-                results.append(f"  [{ws_id}] {r['id']} | {r['title'][:60]} | {r['tags']}")
+                # Touch access for search hits
+                _touch_access(conn, "knowledge_items", r["id"])
+                results.append((r["sal"], f"  [{ws_id}] {r['id']} | {r['title'][:60]} | sal={r['sal']:.2f} | {r['tags']}"))
+            conn.commit()
             conn.close()
         except Exception:
             continue
 
     if not results:
         return f"No local results for '{query}'"
-    return f"Local search '{query}' ({len(results)} results):\n" + "\n".join(results[:limit])
+    results.sort(key=lambda x: x[0], reverse=True)  # sort by salience
+    return f"Local search '{query}' ({len(results)} results, sorted by salience):\n" + "\n".join(r[1] for r in results[:limit])
 
 
 # ============================================================
@@ -706,7 +776,26 @@ def memory_oracle_summary() -> str:
 # ============================================================
 
 def main():
-    if "--http" in sys.argv:
+    if "--decay" in sys.argv:
+        # Run decay job (called by sync-all.ps1)
+        from .config import load_config
+        config = load_config()
+        try:
+            with open(config["workspace_map"]) as f:
+                ws_map = json.load(f)
+            total = 0
+            for ws_id in list(ws_map.keys()) + ["claude-setup"]:
+                try:
+                    n = run_decay(ws_id)
+                    if n:
+                        print(f"  [{ws_id}] decayed {n} items")
+                    total += n
+                except Exception:
+                    pass
+            print(f"Decay complete: {total} items decayed")
+        except Exception as e:
+            print(f"Decay error: {e}")
+    elif "--http" in sys.argv:
         mcp.run(transport="streamable-http", host="127.0.0.1", port=8787)
     else:
         mcp.run(transport="stdio")
