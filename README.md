@@ -45,6 +45,8 @@ AI 代理是無狀態的。它們在對話之間會**遺忘所有事情**。你�
 | **語意搜尋** | 用意義而非關鍵字搜尋記憶。由向量嵌入驅動。 |
 | **Agent-Agnostic** | Claude, Gemini, Codex, or any MCP-compatible tool. Your memory isn't locked to one vendor. |
 | **不綁定特定 AI** | Claude、Gemini、Codex 或任何 MCP 相容工具。你的記憶不被鎖在單一廠商。 |
+| **Audit Trail** | Every action logged. Daily reports auto-generated. Full accountability. |
+| **稽核軌跡** | 每個動作都留紀錄。每日報告自動產生。完整的可追溯性。 |
 | **Offline-First** | SQLite works with zero config. Cloud DB is optional for cross-workspace power. |
 | **離線優先** | SQLite 零配置即可使用。雲端資料庫是可選的進階功能。 |
 
@@ -122,7 +124,7 @@ Add to `~/.gemini/settings.json`, then run `python -m mcp_memory --http`:
 
 ---
 
-## MCP Tools (14) / 工具一覽
+## MCP Tools (18) / 工具一覽
 
 ### Write — Capture knowledge as it happens / 寫入——即時捕捉知識
 
@@ -154,11 +156,20 @@ Add to `~/.gemini/settings.json`, then run `python -m mcp_memory --http`:
 |------|-------------|------|
 | `memory_search` | Semantic vector search across all workspaces | 跨所有專案的語意向量搜尋 |
 
+### Trail — Audit logs and daily reports / 軌跡——稽核日誌與每日報告
+
+| Tool | Description | 說明 |
+|------|-------------|------|
+| `memory_audit_search` | Search audit trail by keyword, date, sender, importance | 搜尋稽核軌跡（關鍵字、日期、寄件人、重要性） |
+| `memory_audit_stats` | Audit statistics (by importance, direction, category) | 稽核統計（依重要性、方向、類別） |
+| `memory_daily_report` | View daily reports (email counts, calendar, narrative) | 查看每日報告（郵件計數、行事曆、敘述摘要） |
+| `memory_activity_log` | View agent activity (hr_patrol, pm_patrol, etc.) | 查看代理活動日誌 |
+
 ### Admin / 管理
 
 | Tool | Description | 說明 |
 |------|-------------|------|
-| `memory_status` | System overview (local + cloud + embeddings) | 系統總覽（本地 + 雲端 + 嵌入） |
+| `memory_status` | System overview (local + cloud + trail stats) | 系統總覽（本地 + 雲端 + 軌跡統計） |
 | `memory_compact` | Check session health, trigger compaction | 檢查 session 狀態，觸發壓縮 |
 | `memory_oracle_summary` | Cross-workspace summary from cloud | 雲端跨專案摘要 |
 
@@ -176,6 +187,27 @@ Add to `~/.gemini/settings.json`, then run `python -m mcp_memory --http`:
 | **問題** | 需要答案時 | 「要不要加 Redis？」 |
 | **Knowledge** | You learned something | "VECTOR columns support cosine similarity" |
 | **知識** | 學到東西時 | 「VECTOR 欄位支援 cosine similarity」 |
+
+---
+
+## Audit Trail / 稽核軌跡
+
+> *"Every interaction leaves a trace."* — This is not just a tagline.
+
+> *「凡走過必留下痕跡。」* —— 這不只是標語。
+
+The system maintains a complete audit trail:
+
+| Table | Purpose | 用途 |
+|-------|---------|------|
+| **AUDIT_LOG** | Every email, message, and action with timestamps, sender, subject, importance, and suspicious flags | 每封郵件、訊息和動作，包含時間、寄件人、主旨、重要性、可疑標記 |
+| **ACTIVITY_LOG** | Agent actions (patrols, dispatches, health checks) | 代理動作（巡邏、派送、健康檢查） |
+| **DAILY_REPORTS** | Auto-generated daily summaries with email stats, calendar, high-priority items, narrative | 自動產生的每日摘要：郵件統計、行事曆、高優先項目、敘述 |
+| **AUDIT_PROGRESS** | Tracks which data sources have been processed | 追蹤哪些資料來源已被處理 |
+
+**Query anything**: search by date, sender, keyword, importance level (H/M/L), or suspicious flag. Get aggregate stats by period. Review daily reports with full narrative summaries.
+
+**查詢任何事情**：依日期、寄件人、關鍵字、重要性（高/中/低）或可疑標記搜尋。取得按期間的彙總統計。查看附有完整敘述的每日報告。
 
 ---
 
