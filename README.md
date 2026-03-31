@@ -211,6 +211,35 @@ The system maintains a complete audit trail:
 
 ---
 
+## Database Schema (18 Tables) / 資料庫結構（18 張表）
+
+When using a cloud DB, the full schema includes:
+
+使用雲端資料庫時，完整 schema 包含：
+
+| Table | Purpose | 用途 |
+|-------|---------|------|
+| **WORKSPACES** | Registry of all projects with domain tags | 所有專案的註冊表（含領域標記） |
+| **DECISIONS** | Decisions with what/why/how | 決策記錄（做什麼/為什麼/怎麼做） |
+| **RESOLVED** | Resolved issues and bugs | 已解決的問題 |
+| **OPEN_QUESTIONS** | Prioritized open questions | 有優先級的未解問題 |
+| **KNOWLEDGE_ITEMS** | Knowledge with vector embeddings | 知識項目（含向量嵌入） |
+| **DAILY_LOGS** | Daily log metadata | 每日日誌元資料 |
+| **PERSONALITY_TRAITS** | Structured user understanding | 結構化的用戶理解 |
+| **CROSS_REFERENCES** | Links between any two records | 任意兩筆記錄間的關聯 |
+| **TAXONOMY** | Hierarchical category tree | 階層式分類樹 |
+| **CONTACTS** | People and relationships | 聯絡人與關係 |
+| **SOP** | Standard operating procedures | 標準作業流程 |
+| **CHANNELS** | Communication channel configs | 通訊管道設定 |
+| **ACTIVITY_LOG** | Agent action trail (patrols, dispatches) | 代理動作軌跡 |
+| **AUDIT_LOG** | Full audit trail (emails, actions, suspicious flags) | 完整稽核軌跡 |
+| **AUDIT_PROGRESS** | Data source processing tracker | 資料來源處理追蹤 |
+| **DAILY_REPORTS** | Auto-generated daily summaries | 自動產生的每日摘要 |
+| **SYNC_WATERMARK** | Incremental sync tracking | 增量同步追蹤 |
+| **SYNC_LOG** | Sync history | 同步歷史記錄 |
+
+---
+
 ## Cloud Database / 雲端資料庫
 
 The server works **100% offline** with SQLite. Cloud DB unlocks cross-workspace search and vector similarity.
