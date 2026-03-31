@@ -1,0 +1,15 @@
+[project]
+name = "mcp-memory-server"
+version = "0.1.0"
+description = "MCP Memory Server — unified memory interface for AI agents with SQLite + Oracle + Vector Search"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=3.0",
+    "oracledb>=2.0",
+]
+
+[project.optional-dependencies]
+embeddings = ["openai>=1.0"]
+
+[project.scripts]
+mcp-memory = "mcp_memory.server:main"
