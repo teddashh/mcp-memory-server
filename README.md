@@ -342,7 +342,7 @@ Vector search needs an Oracle database with AI Vector Search (`VECTOR_DISTANCE`)
 
 ## Status and limits
 
-v0.1.0 was written and published on 2026-03-31. The code has not changed since, and the project is not actively maintained.
+v0.1.0 was written and published on 2026-03-31. Its functionality has not changed since, and the project is not actively maintained.
 
 Checked on 2026-09-30 with Python 3.14 and fastmcp 4.0.10:
 
@@ -375,4 +375,4 @@ Issues and pull requests are welcome.
 
 ## License
 
-MIT, as declared by the author. A separate LICENSE file has not been added yet.
+MIT. See [LICENSE](LICENSE).

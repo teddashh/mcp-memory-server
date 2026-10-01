@@ -14,7 +14,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 
 def main():
     print("=" * 60)
-    print("MCP Memory Server — Setup")
+    print("MCP Memory Server: Setup")
     print("=" * 60)
 
     config = {}

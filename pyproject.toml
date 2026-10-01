@@ -1,7 +1,7 @@
 [project]
 name = "mcp-memory-server"
 version = "0.1.0"
-description = "MCP Memory Server — unified memory interface for AI agents with SQLite + Oracle + Vector Search"
+description = "MCP Memory Server: unified memory interface for AI agents with SQLite + Oracle + Vector Search"
 requires-python = ">=3.11"
 dependencies = [
     "fastmcp>=3.0",

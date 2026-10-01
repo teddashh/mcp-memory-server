@@ -1,5 +1,5 @@
 """
-Database layer — SQLite (local) + Oracle (cloud).
+Database layer: SQLite (local) + Oracle (cloud).
 """
 import json
 import os
