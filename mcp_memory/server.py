@@ -1,5 +1,5 @@
 """
-MCP Memory Server — unified memory interface for AI agents.
+MCP Memory Server: unified memory interface for AI agents.
 
 Tools (18 + 1):
   Write:    memory_store, memory_record_decision, memory_record_resolved,
@@ -261,7 +261,7 @@ def estimate_tokens(text: str) -> int:
 
 
 # ============================================================
-# SALIENCE — access tracking, reinforcement, decay
+# SALIENCE: access tracking, reinforcement, decay
 # ============================================================
 
 def _touch_access(conn, table: str, record_id: str):
@@ -321,7 +321,7 @@ def run_decay(workspace_id: str = None, decay_factor: float = 0.95, stale_days: 
 
 
 # ============================================================
-# SEARCH TOOLS — Oracle vector + text
+# SEARCH TOOLS: Oracle vector + text
 # ============================================================
 
 @mcp.tool()
@@ -455,7 +455,7 @@ def _local_text_search(query: str, limit: int) -> str:
 
 
 # ============================================================
-# TRAIL / AUDIT TOOLS — action logs, audit trail, daily reports
+# TRAIL / AUDIT TOOLS: action logs, audit trail, daily reports
 # ============================================================
 
 @mcp.tool()
