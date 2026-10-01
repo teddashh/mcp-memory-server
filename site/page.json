@@ -362,7 +362,7 @@
         },
         "body": {
           "en": "The session check needs a threshold, not an exact count. Weighting characters by class adds no dependency and keeps CJK-heavy files from looking up to six times smaller than a flat 0.25-per-character rule would make them.",
-          "zh": "session 檢查需要的是門檻，不是精確的數字。依字元類別加權不必多裝套件，也避免以中文為主的檔案，被一律每字 0.25 的算法低估到只剩六分之一。"
+          "zh": "session 檢查需要的是門檻，不是精確的數字。依字元類別加權不必多裝套件，也避免以中文為主的檔案，被一律每字 0.25 的估算方式低估到只剩六分之一。"
         }
       }
     ]
@@ -451,8 +451,8 @@
       "zh": "目前的樣子。"
     },
     "intro": {
-      "en": "v0.1.0 was written and published on 2026-03-31, with no commits since. It is not actively maintained. It still loads on current FastMCP, and the local tools work once the database exists.",
-      "zh": "v0.1.0 在 2026-03-31 寫完並發布，之後沒有新的 commit，目前沒有持續維護。它在目前的 FastMCP 上仍能載入，資料庫建好之後，本地工具都能正常使用。"
+      "en": "v0.1.0 was written and published on 2026-03-31, and the code has not changed since. It is not actively maintained. It still loads on current FastMCP, and the local tools work once the database exists.",
+      "zh": "v0.1.0 在 2026-03-31 寫完並發布，之後程式碼沒有再更新，目前沒有持續維護。它在目前的 FastMCP 上仍能載入，資料庫建好之後，本地工具都能正常使用。"
     },
     "works_title": {
       "en": "Checked on 2026-09-30",
@@ -545,8 +545,8 @@
     },
     {
       "label": {
-        "en": "Last commit",
-        "zh": "最後提交"
+        "en": "Last code change",
+        "zh": "最後程式更新"
       },
       "value": "2026-03-31"
     },
