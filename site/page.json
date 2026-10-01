@@ -5,14 +5,15 @@
   "mark": "MM",
   "palette": "teal",
   "default_branch": "master",
-  "verified": "2026-09-30",
+  "verified": "2026-10-01",
   "language": "Python",
   "license": {
     "spdx": "MIT",
     "label": {
       "en": "MIT License",
       "zh": "MIT 授權"
-    }
+    },
+    "href": "LICENSE"
   },
   "title": {
     "en": "Typed long-term memory for AI agents over MCP",
@@ -451,8 +452,8 @@
       "zh": "目前的樣子。"
     },
     "intro": {
-      "en": "v0.1.0 was written and published on 2026-03-31, and the code has not changed since. It is not actively maintained. It still loads on current FastMCP, and the local tools work once the database exists.",
-      "zh": "v0.1.0 在 2026-03-31 寫完並發布，之後程式碼沒有再更新，目前沒有持續維護。它在目前的 FastMCP 上仍能載入，資料庫建好之後，本地工具都能正常使用。"
+      "en": "v0.1.0 was written and published on 2026-03-31, and its functionality has not changed since. It is not actively maintained. It still loads on current FastMCP, and the local tools work once the database exists.",
+      "zh": "v0.1.0 在 2026-03-31 寫完並發布，之後功能沒有再變更，目前沒有持續維護。它在目前的 FastMCP 上仍能載入，資料庫建好之後，本地工具都能正常使用。"
     },
     "works_title": {
       "en": "Checked on 2026-09-30",
@@ -506,8 +507,8 @@
         "zh": "衰減沒有下限，每執行一次就套用一次，速度取決於你的排程"
       },
       {
-        "en": "Secrets are saved as plain JSON, and there are no tests, releases, or LICENSE file (the README declares MIT)",
-        "zh": "機密資訊以明文 JSON 儲存；沒有測試、沒有 release，也沒有 LICENSE 檔（README 聲明為 MIT）"
+        "en": "Secrets are saved as plain JSON, and there are no tests or releases",
+        "zh": "機密資訊以明文 JSON 儲存；沒有測試，也沒有 release"
       }
     ]
   },
@@ -524,10 +525,7 @@
         "en": "License",
         "zh": "授權"
       },
-      "value": {
-        "en": "MIT, per README",
-        "zh": "MIT（README 聲明）"
-      }
+      "value": "MIT"
     },
     {
       "label": {
@@ -545,8 +543,8 @@
     },
     {
       "label": {
-        "en": "Last code change",
-        "zh": "最後程式更新"
+        "en": "Last feature change",
+        "zh": "最後功能更新"
       },
       "value": "2026-03-31"
     },
@@ -555,7 +553,7 @@
         "en": "Verified",
         "zh": "查核日期"
       },
-      "value": "2026-09-30"
+      "value": "2026-10-01"
     }
   ],
   "links": [
