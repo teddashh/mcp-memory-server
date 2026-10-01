@@ -1,0 +1,574 @@
+{
+  "repo": "teddashh/mcp-memory-server",
+  "slug": "mcp-memory-server",
+  "name": "mcp-memory-server",
+  "mark": "MM",
+  "palette": "teal",
+  "default_branch": "master",
+  "verified": "2026-09-30",
+  "language": "Python",
+  "license": {
+    "spdx": "MIT",
+    "label": {
+      "en": "MIT License",
+      "zh": "MIT 授權"
+    }
+  },
+  "title": {
+    "en": "Typed long-term memory for AI agents over MCP",
+    "zh": "透過 MCP 提供給 AI agent 的分類型長期記憶"
+  },
+  "description": {
+    "en": "An MCP server with 18 tools that keeps decisions, resolved issues, open questions, and knowledge in one SQLite file per workspace, ranks recall by salience, and can query an Oracle database for vector search and audit logs.",
+    "zh": "一個有 18 個工具的 MCP 伺服器：把決策、已解決的問題、待解問題與知識，依工作區各存成一個 SQLite 檔，依重要度排序回想，也能查詢 Oracle 資料庫做向量搜尋與稽核紀錄。"
+  },
+  "hero": {
+    "eyebrow": {
+      "en": "MCP server · agent memory",
+      "zh": "MCP 伺服器 · agent 記憶"
+    },
+    "headline": {
+      "en": "Remember the decision, not just the <em>text</em>.",
+      "zh": "記住的是<em>決策</em>，不只是文字。"
+    },
+    "lede": {
+      "en": "A Python MCP server that files what an agent learns as decisions, resolved issues, open questions, or knowledge, in one SQLite file per workspace. Records that get used rank higher; a decay job lowers the ones nobody touches.",
+      "zh": "一個 Python 寫的 MCP 伺服器，把 agent 學到的東西分成決策、已解決的問題、待解問題與知識，每個工作區存成一個 SQLite 檔。常被用到的紀錄排得比較前面，沒人碰的由衰減排程慢慢調低。"
+    },
+    "primary": {
+      "href": "#start",
+      "label": {
+        "en": "Set it up",
+        "zh": "開始設定"
+      }
+    },
+    "secondary": {
+      "href": "https://github.com/teddashh/mcp-memory-server",
+      "label": {
+        "en": "View source",
+        "zh": "查看原始碼"
+      }
+    },
+    "notes": [
+      "Python 3.11+",
+      "FastMCP · stdio / HTTP",
+      {
+        "en": "Not actively maintained",
+        "zh": "目前沒有持續維護"
+      }
+    ],
+    "visual": {
+      "type": "terminal",
+      "top": {
+        "en": "Tool calls · workspace my-project",
+        "zh": "工具呼叫 · 工作區 my-project"
+      },
+      "badge": {
+        "en": "18 tools",
+        "zh": "18 個工具"
+      },
+      "lines": [
+        {
+          "kind": "dim",
+          "text": "› memory_store(\"Decided to use SQLite | zero setup\")"
+        },
+        {
+          "kind": "ok",
+          "text": "Decision recorded [my-project]: Decided to use SQLite (id: e63c4402)"
+        },
+        {
+          "kind": "dim",
+          "text": "› memory_reinforce(\"e63c4402\")"
+        },
+        {
+          "kind": "out",
+          "text": "Reinforced 'e63c4402' in decisions [my-project]: salience 1.00 → 1.20"
+        },
+        {
+          "kind": "dim",
+          "text": "› memory_search(\"fastmcp\")"
+        },
+        {
+          "kind": "out",
+          "text": "Local search 'fastmcp' (1 results, sorted by salience):"
+        },
+        {
+          "kind": "out",
+          "text": "  [my-project] 77a435c3 | FastMCP serves /mcp over HTTP | sal=1.05 | [\"mcp\", \"http\"]"
+        },
+        {
+          "kind": "dim",
+          "text": "› memory_compact()"
+        },
+        {
+          "kind": "ok",
+          "text": "[my-project] session.md status: OK"
+        },
+        {
+          "kind": "out",
+          "text": "  Lines: 2 | Chars: 45 | Estimated tokens: 31"
+        }
+      ]
+    }
+  },
+  "stats": [
+    {
+      "value": "18",
+      "label": {
+        "en": "MCP tools registered",
+        "zh": "已註冊的 MCP 工具"
+      }
+    },
+    {
+      "value": "4",
+      "label": {
+        "en": "Record types, one table each",
+        "zh": "紀錄類型，各有一張表"
+      }
+    },
+    {
+      "value": "1.5",
+      "label": {
+        "en": "Estimated tokens per CJK character",
+        "zh": "每個 CJK 字元的估計 token 數"
+      }
+    },
+    {
+      "value": "v0.1.0",
+      "label": {
+        "en": "The only version, March 2026",
+        "zh": "唯一的版本，2026 年 3 月"
+      }
+    }
+  ],
+  "capabilities": {
+    "kicker": {
+      "en": "What it does",
+      "zh": "它做什麼"
+    },
+    "title": {
+      "en": "Structured recall, not a note dump.",
+      "zh": "有結構的回想，不是一堆筆記。"
+    },
+    "intro": {
+      "en": "Writes always go to the current workspace's SQLite file. Oracle and OpenAI are optional and only come into play when reading.",
+      "zh": "寫入一律進目前工作區的 SQLite 檔。Oracle 與 OpenAI 都是選配，只在讀取時派上用場。"
+    },
+    "items": [
+      {
+        "title": {
+          "en": "Four record types",
+          "zh": "四種紀錄類型"
+        },
+        "body": {
+          "en": "Decisions keep what, why, and how. Resolved issues keep what and how. Open questions carry a priority from 1 to 3. Everything else is a knowledge item with a title, content, and tags.",
+          "zh": "決策記下做什麼、為什麼、怎麼做；已解決的問題記下問題與解法；待解問題有 1 到 3 的優先度；其餘都是有標題、內容與標籤的知識項目。"
+        },
+        "tag": "memory_record_*"
+      },
+      {
+        "title": {
+          "en": "One call to store",
+          "zh": "一個呼叫就能存"
+        },
+        "body": {
+          "en": "memory_store picks the type from English keywords such as decided, fixed, or a question mark, and splits a decision's what | why | how on the pipes.",
+          "zh": "memory_store 依英文關鍵字判斷類型，例如 decided、fixed 或半形的 ?，再用 | 把決策拆成做什麼、為什麼、怎麼做。"
+        },
+        "tag": "memory_store"
+      },
+      {
+        "title": {
+          "en": "Salience instead of deletion",
+          "zh": "用重要度取代刪除"
+        },
+        "body": {
+          "en": "A read or a local search hit multiplies salience by 1.05, memory_reinforce by 1.2, capped at 2.0. The decay job multiplies anything untouched for 30 days by 0.95 and never deletes a row.",
+          "zh": "每次讀取或本地搜尋命中，重要度乘以 1.05；memory_reinforce 乘以 1.2，上限 2.0。衰減排程把 30 天沒被碰過的紀錄乘以 0.95，但從不刪除資料。"
+        },
+        "tag": "python -m mcp_memory --decay"
+      },
+      {
+        "title": {
+          "en": "Search with fallbacks",
+          "zh": "逐層退回的搜尋"
+        },
+        "body": {
+          "en": "With Oracle and an OpenAI key, memory_search runs cosine vector search. With Oracle alone, a text match ranked by salience. With neither, a text match across every mapped workspace.",
+          "zh": "有 Oracle 加 OpenAI 金鑰時，memory_search 做 cosine 向量搜尋；只有 Oracle 時，改用依重要度排序的文字比對；兩者都沒有，就比對所有已對應的工作區。"
+        },
+        "tag": "memory_search"
+      },
+      {
+        "title": {
+          "en": "CJK-aware session check",
+          "zh": "CJK 感知的 session 檢查"
+        },
+        "body": {
+          "en": "memory_compact weighs session.md at 1.5 tokens per CJK, kana, or Hangul character, 2.0 per emoji, 0.25 otherwise, and flags it past 3,000 tokens or 100 lines. The agent does the trimming.",
+          "zh": "memory_compact 估算 session.md 時，CJK、日文假名與韓文每字算 1.5 token，emoji 算 2.0，其他算 0.25，超過 3,000 token 或 100 行就提醒壓縮，實際整理交給 agent。"
+        },
+        "tag": "memory_compact"
+      },
+      {
+        "title": {
+          "en": "Audit and report queries",
+          "zh": "稽核與報告查詢"
+        },
+        "body": {
+          "en": "Four read-only tools search an Oracle AUDIT_LOG by keyword, date, sender, or H/M/L importance, count it, and read DAILY_REPORTS and ACTIVITY_LOG. Something else has to fill those tables.",
+          "zh": "四個唯讀工具可以依關鍵字、日期、寄件者或 H/M/L 重要性搜尋 Oracle 的 AUDIT_LOG、做統計，也能讀 DAILY_REPORTS 與 ACTIVITY_LOG。這些表要由別的程式寫入。"
+        },
+        "tag": "memory_audit_search"
+      }
+    ]
+  },
+  "architecture": {
+    "kicker": {
+      "en": "Architecture",
+      "zh": "系統架構"
+    },
+    "title": {
+      "en": "Where the data lives.",
+      "zh": "資料放在哪裡。"
+    },
+    "intro": {
+      "en": "Local tools resolve a workspace, then read or write that workspace's SQLite file. Oracle, when configured, is only ever queried, never written to.",
+      "zh": "本地工具會先判斷工作區，再讀寫該工作區的 SQLite 檔。有設定 Oracle 時只會查詢它，從不寫入。"
+    },
+    "label": {
+      "en": "Tool call → workspace → store",
+      "zh": "工具呼叫 → 工作區 → 儲存"
+    },
+    "nodes": [
+      {
+        "name": {
+          "en": "MCP client",
+          "zh": "MCP 用戶端"
+        },
+        "lines": [
+          "Claude Code · stdio",
+          {
+            "en": "Any client over HTTP",
+            "zh": "任何走 HTTP 的用戶端"
+          },
+          "127.0.0.1:8787/mcp"
+        ]
+      },
+      {
+        "name": "mcp_memory",
+        "core": true,
+        "lines": [
+          {
+            "en": "18 FastMCP tools",
+            "zh": "18 個 FastMCP 工具"
+          },
+          {
+            "en": "Workspace from MEMORY_WORKSPACE or cwd",
+            "zh": "工作區取自 MEMORY_WORKSPACE 或 cwd"
+          },
+          {
+            "en": "Updates salience on read",
+            "zh": "讀取時更新重要度"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Stores",
+          "zh": "儲存"
+        },
+        "lines": [
+          {
+            "en": "SQLite per workspace: read and write",
+            "zh": "每個工作區的 SQLite：可讀寫"
+          },
+          {
+            "en": "Oracle, optional: read only",
+            "zh": "Oracle（選配）：唯讀"
+          },
+          {
+            "en": "OpenAI embeds the query only",
+            "zh": "OpenAI 只負責查詢向量"
+          }
+        ]
+      }
+    ],
+    "return": "~/.mcp-memory/config.json · workspace-map.json · .claude-memory/memory.db",
+    "principles": {
+      "title": {
+        "en": "What it expects from you.",
+        "zh": "需要你先準備好的東西。"
+      },
+      "items": [
+        {
+          "en": "A workspace-map.json that maps workspace ids to folders",
+          "zh": "一份 workspace-map.json，把工作區 ID 對應到資料夾"
+        },
+        {
+          "en": "A memory.db per workspace; the repo ships no schema or migrations",
+          "zh": "每個工作區一個 memory.db；repo 裡沒有 schema，也沒有 migration"
+        },
+        {
+          "en": "Oracle tables filled by your own jobs, if you want vector search or audit queries",
+          "zh": "要用向量搜尋或稽核查詢，Oracle 的表得由你自己的排程寫入"
+        },
+        {
+          "en": "A scheduler for --decay, if you want stale records to sink",
+          "zh": "想讓舊紀錄往下沉，就要自己排程執行 --decay"
+        },
+        {
+          "en": "Secrets in environment variables rather than the plain-JSON config",
+          "zh": "機密資訊最好放環境變數，不要放在明文的 JSON 設定檔"
+        }
+      ]
+    }
+  },
+  "decisions": {
+    "kicker": {
+      "en": "Design decisions",
+      "zh": "設計取捨"
+    },
+    "title": {
+      "en": "Why it is shaped this way.",
+      "zh": "為什麼這樣設計。"
+    },
+    "nav": false,
+    "items": [
+      {
+        "title": {
+          "en": "Typed tables over one memory blob",
+          "zh": "分表存放，而不是一整包記憶"
+        },
+        "body": {
+          "en": "Decisions, fixes, questions, and knowledge have different fields and lifetimes. Separate tables let an agent list open questions by priority or pull a decision together with its reasoning.",
+          "zh": "決策、修正、問題與知識，欄位不同，保存的時間也不同。分表存放，agent 才能依優先度列出待解問題，或把決策連同理由一起找出來。"
+        }
+      },
+      {
+        "title": {
+          "en": "Fade instead of delete",
+          "zh": "淡出，而不是刪除"
+        },
+        "body": {
+          "en": "Salience only changes ranking. Decay lowers a score and never removes a row, so an old record can still be listed or fetched by id; it just ranks lower in search.",
+          "zh": "重要度只影響排序。衰減只降分數、不刪資料，舊紀錄仍然可以列出來或用 ID 取回，只是在搜尋結果裡排得比較後面。"
+        }
+      },
+      {
+        "title": {
+          "en": "A character-class estimate, not a tokenizer",
+          "zh": "依字元類別估算，不用 tokenizer"
+        },
+        "body": {
+          "en": "The session check needs a threshold, not an exact count. Weighting characters by class adds no dependency and keeps CJK-heavy files from looking up to six times smaller than a flat 0.25-per-character rule would make them.",
+          "zh": "session 檢查需要的是門檻，不是精確的數字。依字元類別加權不必多裝套件，也避免以中文為主的檔案，被一律每字 0.25 的估算方式低估到只剩六分之一。"
+        }
+      }
+    ]
+  },
+  "quickstart": {
+    "kicker": {
+      "en": "Start here",
+      "zh": "從這裡開始"
+    },
+    "title": {
+      "en": "Set up in four steps.",
+      "zh": "四個步驟完成設定。"
+    },
+    "intro": {
+      "en": "You need Python 3.11+ and bash or zsh. The server does not create its own databases, so you map a workspace and create memory.db once. These commands were run as written on 2026-09-30.",
+      "zh": "需要 Python 3.11 以上，以及 bash 或 zsh。伺服器不會自己建資料庫，所以要先對應一個工作區，並建立一次 memory.db。這些指令已在 2026-09-30 照原樣實際跑過。"
+    },
+    "primary": {
+      "href": "https://github.com/teddashh/mcp-memory-server/blob/master/README.md#quick-start",
+      "label": {
+        "en": "Full setup in the README",
+        "zh": "README 的完整步驟"
+      }
+    },
+    "secondary": {
+      "href": "https://github.com/teddashh/mcp-memory-server/blob/master/README.zh-TW.md#快速開始",
+      "label": {
+        "en": "中文設定說明",
+        "zh": "中文設定說明"
+      }
+    },
+    "steps": [
+      {
+        "title": {
+          "en": "Install",
+          "zh": "安裝"
+        },
+        "body": {
+          "en": "setup_config.py is optional; it writes paths, an Oracle wallet connection, and an OpenAI key to ~/.mcp-memory/config.json.",
+          "zh": "setup_config.py 可以不跑；它會把路徑、Oracle wallet 連線與 OpenAI 金鑰寫進 ~/.mcp-memory/config.json。"
+        },
+        "code": "git clone https://github.com/teddashh/mcp-memory-server.git\ncd mcp-memory-server\npip install -e ."
+      },
+      {
+        "title": {
+          "en": "Map a workspace",
+          "zh": "對應工作區"
+        },
+        "body": {
+          "en": "The workspace map turns an id into a folder under ~/Documents/Workspace.",
+          "zh": "工作區對應檔把一個 ID 對應到 ~/Documents/Workspace 底下的資料夾。"
+        },
+        "code": "mkdir -p ~/Documents/claude-setup\nmkdir -p ~/Documents/Workspace/my-project/.claude-memory\necho '{\"my-project\": \"my-project\"}' \\\n  > ~/Documents/claude-setup/workspace-map.json"
+      },
+      {
+        "title": {
+          "en": "Create its database",
+          "zh": "建立資料庫"
+        },
+        "body": {
+          "en": "Save the SQL from the README as schema.sql, then run this in the same folder.",
+          "zh": "把 README 裡的 SQL 存成 schema.sql，再到同一個資料夾執行。"
+        },
+        "code": "python - <<'PY'\nimport sqlite3\nfrom pathlib import Path\nws = Path.home() / \"Documents/Workspace/my-project\"\ndb = sqlite3.connect(ws / \".claude-memory\" / \"memory.db\")\ndb.executescript(Path(\"schema.sql\").read_text())\nPY"
+      },
+      {
+        "title": {
+          "en": "Register and check",
+          "zh": "註冊並確認"
+        },
+        "body": {
+          "en": "Run it inside your project, with the Python you installed into. Then ask the agent to call memory_status: it should show my-project, zero counts, and Oracle not connected.",
+          "zh": "在你的專案裡執行，並使用安裝套件時的那個 Python。接著請 agent 呼叫 memory_status：應該會顯示 my-project、全部為零的數量，以及 Oracle not connected。"
+        },
+        "code": "claude mcp add memory -e MEMORY_WORKSPACE=my-project \\\n  -- python -X utf8 -m mcp_memory"
+      }
+    ]
+  },
+  "status": {
+    "kicker": {
+      "en": "Honest status",
+      "zh": "誠實的現況"
+    },
+    "title": {
+      "en": "Where it stands.",
+      "zh": "目前的樣子。"
+    },
+    "intro": {
+      "en": "v0.1.0 was written and published on 2026-03-31, and the code has not changed since. It is not actively maintained. It still loads on current FastMCP, and the local tools work once the database exists.",
+      "zh": "v0.1.0 在 2026-03-31 寫完並發布，之後程式碼沒有再更新，目前沒有持續維護。它在目前的 FastMCP 上仍能載入，資料庫建好之後，本地工具都能正常使用。"
+    },
+    "works_title": {
+      "en": "Checked on 2026-09-30",
+      "zh": "2026-09-30 實測可用"
+    },
+    "works": [
+      {
+        "en": "All 18 tools register on fastmcp 4.0.10, the latest release at the time",
+        "zh": "18 個工具都能在 fastmcp 4.0.10（當時的最新版）上註冊"
+      },
+      {
+        "en": "The four setup steps on this page, run as written in an empty home directory; claude mcp list shows the server connected",
+        "zh": "本頁的四個設定步驟，在全新的家目錄照原樣跑過；claude mcp list 顯示伺服器已連線"
+      },
+      {
+        "en": "With a prepared memory.db: store, list, get, delete, reinforce, local search, and the session check",
+        "zh": "memory.db 準備好之後：儲存、列出、取回、刪除、強化、本地搜尋與 session 檢查都正常"
+      },
+      {
+        "en": "Salience tracking on reads, and the --decay job",
+        "zh": "讀取時的重要度追蹤，以及 --decay 衰減排程"
+      },
+      {
+        "en": "stdio by default; --http serves streamable HTTP at 127.0.0.1:8787/mcp",
+        "zh": "預設走 stdio；--http 會在 127.0.0.1:8787/mcp 提供 streamable HTTP"
+      },
+      {
+        "en": "Interactive setup_config.py for paths, an Oracle wallet, and OpenAI embeddings",
+        "zh": "互動式的 setup_config.py，可以設定路徑、Oracle wallet 與 OpenAI embedding"
+      }
+    ],
+    "limits": [
+      {
+        "en": "No schema or migrations: you create memory.db, the workspace map, and any Oracle tables",
+        "zh": "沒有 schema 也沒有 migration：memory.db、工作區對應檔與 Oracle 的表都要自己建"
+      },
+      {
+        "en": "Oracle is the only cloud database in the code, and nothing here syncs SQLite to it, writes embeddings, or fills the audit tables",
+        "zh": "程式裡唯一的雲端資料庫是 Oracle，而且沒有任何程式會把 SQLite 同步過去、寫入 embedding，或填入稽核相關的表"
+      },
+      {
+        "en": "Search covers knowledge items only, and the vector path ignores salience",
+        "zh": "搜尋只涵蓋知識項目，而且向量搜尋不看重要度"
+      },
+      {
+        "en": "Auto-classification reads English keywords only; a full-width ？ is not treated as a question",
+        "zh": "自動分類只認英文關鍵字；全形的「？」不會被當成問題"
+      },
+      {
+        "en": "Decay has no floor and applies once per run, so its pace depends on your scheduler",
+        "zh": "衰減沒有下限，每執行一次就套用一次，速度取決於你的排程"
+      },
+      {
+        "en": "Secrets are saved as plain JSON, and there are no tests, releases, or LICENSE file (the README declares MIT)",
+        "zh": "機密資訊以明文 JSON 儲存；沒有測試、沒有 release，也沒有 LICENSE 檔（README 聲明為 MIT）"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "label": {
+        "en": "Version",
+        "zh": "版本"
+      },
+      "value": "0.1.0"
+    },
+    {
+      "label": {
+        "en": "License",
+        "zh": "授權"
+      },
+      "value": {
+        "en": "MIT, per README",
+        "zh": "MIT（README 聲明）"
+      }
+    },
+    {
+      "label": {
+        "en": "Stack",
+        "zh": "技術"
+      },
+      "value": "Python · FastMCP · SQLite"
+    },
+    {
+      "label": {
+        "en": "Optional",
+        "zh": "選配"
+      },
+      "value": "Oracle · OpenAI embeddings"
+    },
+    {
+      "label": {
+        "en": "Last code change",
+        "zh": "最後程式更新"
+      },
+      "value": "2026-03-31"
+    },
+    {
+      "label": {
+        "en": "Verified",
+        "zh": "查核日期"
+      },
+      "value": "2026-09-30"
+    }
+  ],
+  "links": [
+    {
+      "href": "https://github.com/teddashh/mcp-memory-server/blob/master/README.zh-TW.md",
+      "label": {
+        "en": "中文 README",
+        "zh": "中文 README"
+      }
+    },
+    {
+      "href": "https://github.com/PrefectHQ/fastmcp",
+      "label": "FastMCP"
+    }
+  ]
+}
