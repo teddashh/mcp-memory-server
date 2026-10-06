@@ -5,7 +5,7 @@
   "mark": "MM",
   "palette": "teal",
   "default_branch": "master",
-  "verified": "2026-10-01",
+  "verified": "2026-10-06",
   "language": "Python",
   "license": {
     "spdx": "MIT",
@@ -553,7 +553,7 @@
         "en": "Verified",
         "zh": "查核日期"
       },
-      "value": "2026-10-01"
+      "value": "2026-10-06"
     }
   ],
   "links": [
@@ -567,6 +567,571 @@
     {
       "href": "https://github.com/PrefectHQ/fastmcp",
       "label": "FastMCP"
+    }
+  ],
+  "flows": [
+    {
+      "id": "store",
+      "heading": {
+        "en": "How a note is filed",
+        "zh": "一則紀錄怎麼歸檔"
+      },
+      "intro": {
+        "en": "memory_store reads English keywords, then writes one row in that workspace's SQLite file.",
+        "zh": "memory_store 先看英文關鍵字，再把一列寫進該工作區的 SQLite 檔。"
+      },
+      "after": "features",
+      "spec": {
+        "columns": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2,
+            3,
+            4,
+            5
+          ]
+        ],
+        "core": 1
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "Tool call",
+            "zh": "工具呼叫"
+          },
+          "note": {
+            "en": "An MCP client calls memory_store with one string.",
+            "zh": "MCP 用戶端用一個字串呼叫 memory_store。"
+          },
+          "tone": "neutral",
+          "icon": "terminal"
+        },
+        {
+          "title": {
+            "en": "Pick a type",
+            "zh": "判斷類型"
+          },
+          "note": {
+            "en": "Words such as decided or fixed pick the table, and a halfwidth question mark marks a question.",
+            "zh": "decided、fixed 這類英文單字決定資料表，半形問號則當成問題。"
+          },
+          "tone": "accent",
+          "icon": "route"
+        },
+        {
+          "title": {
+            "en": "Decision",
+            "zh": "決策"
+          },
+          "note": {
+            "en": "The row keeps what, why, and how, split on pipe characters.",
+            "zh": "這一列用直線符號拆成做什麼、為什麼、怎麼做。"
+          },
+          "tone": "info",
+          "icon": "doc"
+        },
+        {
+          "title": {
+            "en": "Resolved",
+            "zh": "已解決"
+          },
+          "note": {
+            "en": "The row keeps the problem and the fix, split on one pipe.",
+            "zh": "這一列用一個直線符號拆成問題與解法。"
+          },
+          "tone": "info",
+          "icon": "check"
+        },
+        {
+          "title": {
+            "en": "Question",
+            "zh": "待解問題"
+          },
+          "note": {
+            "en": "Priority stays 1, 2, or 3, and the default is 2.",
+            "zh": "優先度是 1、2 或 3，預設為 2。"
+          },
+          "tone": "info",
+          "icon": "chat"
+        },
+        {
+          "title": {
+            "en": "Knowledge",
+            "zh": "知識"
+          },
+          "note": {
+            "en": "The title is the first 100 characters, and the full string is the body.",
+            "zh": "標題取前 100 個字元，整段字串當內容。"
+          },
+          "tone": "info",
+          "icon": "database"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "keywords checked",
+          "zh": "已檢查關鍵字"
+        },
+        {
+          "en": "table chosen",
+          "zh": "已選定資料表"
+        },
+        {
+          "en": "one row inserted",
+          "zh": "已寫入一列"
+        }
+      ],
+      "caption": {
+        "en": "memory_store classifies one string with English keywords such as decided, fixed, or a halfwidth question mark, splits a decision on pipe characters, and inserts one row into decisions, resolved, open_questions, or knowledge_items.",
+        "zh": "memory_store 用 decided、fixed 或半形問號這類英文關鍵字分類，決策再用直線符號拆欄，然後在 decisions、resolved、open_questions 或 knowledge_items 插入一列。"
+      }
+    },
+    {
+      "id": "search",
+      "heading": {
+        "en": "Which search actually runs",
+        "zh": "搜尋實際走哪一條"
+      },
+      "intro": {
+        "en": "memory_search tries the richest path it can, and every path reads knowledge items only.",
+        "zh": "memory_search 能用多完整就用多完整，而且每一條都只讀知識項目。"
+      },
+      "after": "features",
+      "spec": {
+        "columns": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ],
+        "core": 1,
+        "lanes": [
+          "vector",
+          "oracle text",
+          "sqlite"
+        ],
+        "selectedLane": 2
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "Query",
+            "zh": "查詢字串"
+          },
+          "note": {
+            "en": "The caller passes a query, and optionally a domain of all, work, or personal.",
+            "zh": "呼叫端傳入查詢，也可以指定 all、work 或 personal。"
+          },
+          "tone": "neutral",
+          "icon": "search"
+        },
+        {
+          "title": {
+            "en": "memory_search",
+            "zh": "搜尋入口"
+          },
+          "note": {
+            "en": "Vector needs Oracle plus an OpenAI key, Oracle text ranks by salience, and SQLite is the path with neither.",
+            "zh": "向量需要 Oracle 與 OpenAI 金鑰，Oracle 文字依重要度排序，兩者都沒有就走 SQLite。"
+          },
+          "tone": "accent",
+          "icon": "route"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "query received",
+          "zh": "已收到查詢"
+        },
+        {
+          "en": "sqlite path highlighted",
+          "zh": "標出的是 SQLite"
+        },
+        {
+          "en": "knowledge rows only",
+          "zh": "只回知識項目"
+        }
+      ],
+      "caption": {
+        "en": "memory_search looks at knowledge items only. With Oracle and an OpenAI key it ranks by cosine distance and ignores salience. With Oracle alone it matches text and ranks by salience. With neither, the highlighted path, it matches text in every mapped workspace's SQLite file and raises salience on each hit.",
+        "zh": "memory_search 只看知識項目。有 Oracle 與 OpenAI 金鑰時依 cosine 距離排序，不看重要度。只有 Oracle 時做文字比對並依重要度排序。兩者都沒有時走圖上標出的 SQLite：比對每個已對應工作區，並在命中時提高重要度。"
+      }
+    },
+    {
+      "id": "session",
+      "heading": {
+        "en": "When session.md is too long",
+        "zh": "session.md 何時過長"
+      },
+      "intro": {
+        "en": "memory_compact estimates a length and stops there. The agent does the trimming.",
+        "zh": "memory_compact 只估算長度就停住。整理內容是 agent 的工作。"
+      },
+      "after": "features",
+      "spec": {
+        "columns": [
+          [
+            0,
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "core": 2,
+        "meter": true
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "Line count",
+            "zh": "行數"
+          },
+          "note": {
+            "en": "More than 100 lines is enough on its own to flag the file.",
+            "zh": "超過 100 行，單這一項就會標記該檔。"
+          },
+          "tone": "neutral",
+          "icon": "doc"
+        },
+        {
+          "title": {
+            "en": "Token estimate",
+            "zh": "token 估算"
+          },
+          "note": {
+            "en": "CJK, kana, and Hangul count as 1.5, emoji as 2.0, and every other character as 0.25.",
+            "zh": "CJK、假名與韓文每字 1.5，emoji 每字 2.0，其他字元 0.25。"
+          },
+          "tone": "info",
+          "icon": "search"
+        },
+        {
+          "title": {
+            "en": "Verdict",
+            "zh": "判定"
+          },
+          "note": {
+            "en": "Past 3000 tokens or 100 lines the status is COMPACT RECOMMENDED, and no row is rewritten.",
+            "zh": "超過 3000 token 或 100 行，狀態就是 COMPACT RECOMMENDED，不會改寫任何一列。"
+          },
+          "tone": "accent",
+          "icon": "check"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "lines and tokens counted",
+          "zh": "已數行數與 token"
+        },
+        {
+          "en": "threshold is either one",
+          "zh": "兩個門檻看一個"
+        },
+        {
+          "en": "agent does the trim",
+          "zh": "整理交給 agent"
+        }
+      ],
+      "caption": {
+        "en": "memory_compact reads session.md beside memory.db, counts lines, and estimates tokens by character class: 1.5 for CJK, kana, and Hangul, 2.0 for emoji, and 0.25 otherwise. Either more than 100 lines or more than 3000 tokens flags the file. The tool does not trim it.",
+        "zh": "memory_compact 讀取 memory.db 旁邊的 session.md，數行數，並依字元類別估算 token：CJK、假名與韓文 1.5，emoji 2.0，其他 0.25。超過 100 行或超過 3000 token 就標記。這個工具本身不會刪減內容。"
+      }
+    },
+    {
+      "id": "boundary",
+      "heading": {
+        "en": "What may be written",
+        "zh": "哪裡可以寫入"
+      },
+      "intro": {
+        "en": "Writes stay in the workspace SQLite file. Oracle and OpenAI are optional, and this server only reads them.",
+        "zh": "寫入只留在工作區的 SQLite 檔。Oracle 與 OpenAI 是選配，這個伺服器只讀它們。"
+      },
+      "after": "architecture",
+      "spec": {
+        "columns": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "core": 1,
+        "boundaryAfter": 1
+      },
+      "zones": {
+        "en": [
+          "Workspace",
+          "Read only",
+          "Optional"
+        ],
+        "zh": [
+          "工作區",
+          "只讀界線",
+          "選配服務"
+        ]
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "MCP tool",
+            "zh": "工具呼叫"
+          },
+          "note": {
+            "en": "The client uses stdio, or streamable HTTP on loopback port 8787.",
+            "zh": "用戶端走 stdio，或走本機迴圈連接埠 8787 的 streamable HTTP。"
+          },
+          "tone": "neutral",
+          "icon": "terminal"
+        },
+        {
+          "title": {
+            "en": "memory.db",
+            "zh": "記憶庫"
+          },
+          "note": {
+            "en": "Store, list, get, delete, and reinforce all open this file, which the server never creates.",
+            "zh": "儲存、列出、取回、刪除與強化都開這個檔，伺服器不會自己建立它。"
+          },
+          "tone": "accent",
+          "icon": "database"
+        },
+        {
+          "title": {
+            "en": "Oracle query",
+            "zh": "雲端查詢"
+          },
+          "note": {
+            "en": "Search, audit, daily reports, and the summary run SELECT only.",
+            "zh": "搜尋、稽核、每日報告與摘要都只執行 SELECT。"
+          },
+          "tone": "info",
+          "icon": "cloud"
+        },
+        {
+          "title": {
+            "en": "Embed query",
+            "zh": "查詢向量"
+          },
+          "note": {
+            "en": "An OpenAI key embeds the search string only, and stored rows are not embedded here.",
+            "zh": "OpenAI 金鑰只嵌入搜尋字串，已經存下的列不會在這裡嵌入。"
+          },
+          "tone": "info",
+          "icon": "spark"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "sqlite write finished",
+          "zh": "SQLite 已寫入"
+        },
+        {
+          "en": "oracle stays read only",
+          "zh": "Oracle 維持唯讀"
+        },
+        {
+          "en": "query string embedded",
+          "zh": "只嵌入查詢字串"
+        }
+      ],
+      "caption": {
+        "en": "Tool calls resolve a workspace from MEMORY_WORKSPACE or the current directory, then read and write that workspace's memory.db. Across the read only line, Oracle is queried with SELECT and never inserted into, and OpenAI embeds the search text only. Audit rows, daily reports, and the activity log have to be filled by something else.",
+        "zh": "工具呼叫依 MEMORY_WORKSPACE 或目前目錄決定工作區，再讀寫該工作區的 memory.db。只讀界線的另一側，Oracle 只做 SELECT、不會插入，OpenAI 也只嵌入搜尋文字。稽核列、每日報告與活動紀錄要由別的程式寫入。"
+      }
+    },
+    {
+      "id": "salience",
+      "heading": {
+        "en": "Scores rise and fade",
+        "zh": "重要度上升與淡出"
+      },
+      "intro": {
+        "en": "Salience only changes rank. A decay run lowers a score and never deletes a row.",
+        "zh": "重要度只影響排序。衰減執行會降低分數，但不會刪掉任何一列。"
+      },
+      "after": "decisions",
+      "spec": {
+        "columns": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "core": 1,
+        "loop": true
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "Read or hit",
+            "zh": "讀取或命中"
+          },
+          "note": {
+            "en": "memory_get and a local search hit call the same touch.",
+            "zh": "memory_get 與本地搜尋命中，走的是同一個觸碰。"
+          },
+          "tone": "neutral",
+          "icon": "eye"
+        },
+        {
+          "title": {
+            "en": "Raise score",
+            "zh": "提高分數"
+          },
+          "note": {
+            "en": "A touch multiplies by 1.05 and memory_reinforce by 1.2, both capped at 2.0.",
+            "zh": "一次觸碰乘以 1.05，memory_reinforce 乘以 1.2，上限都是 2.0。"
+          },
+          "tone": "accent",
+          "icon": "bolt"
+        },
+        {
+          "title": {
+            "en": "Decay job",
+            "zh": "衰減排程"
+          },
+          "note": {
+            "en": "python -m mcp_memory --decay multiplies rows untouched for 30 days by 0.95, once per run, with no floor.",
+            "zh": "python -m mcp_memory --decay 把 30 天沒被碰的列乘以 0.95，每跑一次就套用一次，沒有下限。"
+          },
+          "tone": "warn",
+          "icon": "clock"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "score raised on use",
+          "zh": "使用後分數上升"
+        },
+        {
+          "en": "cap stays at 2.0",
+          "zh": "上限維持 2.0"
+        },
+        {
+          "en": "stale rows fade only",
+          "zh": "舊列只會變淡"
+        }
+      ],
+      "caption": {
+        "en": "A read or a local search hit multiplies salience by 1.05, and memory_reinforce multiplies it by 1.2, never above 2.0. The decay command multiplies rows with no access for 30 days by 0.95 once per run and has no floor. The row stays in the table and simply ranks lower.",
+        "zh": "讀取或本地搜尋命中會把重要度乘以 1.05，memory_reinforce 乘以 1.2，最高 2.0。衰減指令把 30 天沒被碰的列乘以 0.95，每執行一次套用一次，沒有下限。那一列仍留在表裡，只是排序更後面。"
+      }
+    },
+    {
+      "id": "setup",
+      "heading": {
+        "en": "From clone to a live tool",
+        "zh": "從 clone 到能呼叫"
+      },
+      "intro": {
+        "en": "The server does not create its database. These four steps are the quick start.",
+        "zh": "伺服器不會自己建資料庫。這四步就是快速開始。"
+      },
+      "after": "start",
+      "spec": {
+        "columns": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "core": 2
+      },
+      "steps": [
+        {
+          "title": {
+            "en": "Install",
+            "zh": "安裝套件"
+          },
+          "note": {
+            "en": "Install in editable mode on Python 3.11 or newer.",
+            "zh": "在 Python 3.11 以上執行 pip install -e .。"
+          },
+          "tone": "neutral",
+          "icon": "download"
+        },
+        {
+          "title": {
+            "en": "Map workspace",
+            "zh": "對應工作區"
+          },
+          "note": {
+            "en": "workspace-map.json points an id at a folder under the workspace root.",
+            "zh": "workspace-map.json 把一個 ID 指到工作區根目錄下的資料夾。"
+          },
+          "tone": "neutral",
+          "icon": "route"
+        },
+        {
+          "title": {
+            "en": "Create database",
+            "zh": "建立資料庫"
+          },
+          "note": {
+            "en": "You apply the README SQL so memory.db exists before the first call.",
+            "zh": "先套用 README 的 SQL，memory.db 要在第一次呼叫前就存在。"
+          },
+          "tone": "accent",
+          "icon": "database"
+        },
+        {
+          "title": {
+            "en": "Register",
+            "zh": "註冊伺服器"
+          },
+          "note": {
+            "en": "claude mcp add starts python -m mcp_memory with MEMORY_WORKSPACE set.",
+            "zh": "claude mcp add 會帶著 MEMORY_WORKSPACE 啟動 python -m mcp_memory。"
+          },
+          "tone": "info",
+          "icon": "check"
+        }
+      ],
+      "ticks": [
+        {
+          "en": "package installed",
+          "zh": "套件已安裝"
+        },
+        {
+          "en": "map file written",
+          "zh": "對應檔已寫好"
+        },
+        {
+          "en": "memory.db ready",
+          "zh": "memory.db 已就緒"
+        }
+      ],
+      "caption": {
+        "en": "Install the package, write workspace-map.json, create memory.db with the README SQL, then register python -m mcp_memory for the workspace. memory_status should then show that workspace, zero counts, and Oracle not connected.",
+        "zh": "安裝套件、寫好 workspace-map.json、用 README 的 SQL 建立 memory.db，再為該工作區註冊 python -m mcp_memory。接著 memory_status 應顯示該工作區、數量為零，以及 Oracle 未連線。"
+      }
     }
   ]
 }
